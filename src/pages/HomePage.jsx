@@ -465,11 +465,11 @@ export default function HomePage() {
             <span className="text-xs">Post</span>
           </Link>
           <Link
-            to="/notifications"
+            to="/suggestions"
             className="flex flex-col items-center gap-1 p-2 text-gray-600"
           >
-            <Bell className="h-5 w-5" />
-            <span className="text-xs">Notifications</span>
+            <Lightbulb className="h-5 w-5" />
+            <span className="text-xs">Suggestions</span>
           </Link>
           <Link
             to="/profile/me"
