@@ -240,7 +240,8 @@ export default function ProfilePage({ username = "me" }) {
       });
       localStorage.removeItem("token");
       localStorage.removeItem("user");
-      window.location.href = "/auth";
+      // window.location.href = "/auth";
+      navigate("/auth")
     } catch (error) {
       console.error("Logout failed", error);
     }

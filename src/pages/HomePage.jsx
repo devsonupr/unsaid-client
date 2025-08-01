@@ -92,7 +92,8 @@ export default function HomePage() {
       });
       localStorage.removeItem("token");
       localStorage.removeItem("user");
-      window.location.href = "/auth";
+      // window.location.href = "/auth";
+      navigate("/auth");
     } catch (error) {
       console.error("Logout failed", error);
     }
