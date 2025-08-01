@@ -139,24 +139,28 @@ export default function HomePage() {
     );
   }
 
-  if (error) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-amber-50 via-white to-rose-50">
-        <div className="text-center p-6 max-w-md mx-auto bg-white rounded-lg shadow-md">
-          <h2 className="text-xl font-semibold text-gray-800 mb-2">
-            Error loading data
-          </h2>
-          <p className="text-gray-600 mb-4">{error}</p>
-          <Link
-            to="/auth"
-            className="inline-block bg-rose-500 hover:bg-rose-600 text-white px-4 py-2 rounded-md"
-          >
-            Go to Login
-          </Link>
-        </div>
+if (error) {
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-amber-50 via-white to-rose-50">
+      <div className="text-center p-6 max-w-md mx-auto bg-white rounded-lg shadow-md">
+        <h2 className="text-xl font-semibold text-gray-800 mb-2">
+          Error loading data
+        </h2>
+        <p className="text-gray-600 mb-4">{error}</p>
+        <Link
+          to="/auth"
+          className="inline-block bg-rose-500 hover:bg-rose-600 text-white px-4 py-2 rounded-md"
+          onClick={() => {
+            localStorage.removeItem("token"); // Clear token to ensure clean login
+            localStorage.removeItem("user");
+          }}
+        >
+          Go to Login
+        </Link>
       </div>
-    );
-  }
+    </div>
+  );
+}
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-amber-50 via-white to-rose-50 flex overflow-x-hidden">
