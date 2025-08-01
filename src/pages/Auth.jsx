@@ -87,7 +87,8 @@ const AuthPage = () => {
     localStorage.setItem("token", response.data.data.token);
     localStorage.setItem("user", JSON.stringify(response.data.data));
 
-    window.location.href = "/home";
+    // window.location.href = "/home";
+    navigate("/home");
   } catch (err) {
     setError(err.response?.data?.message || "Something went wrong.");
     setIsLoading(false);
