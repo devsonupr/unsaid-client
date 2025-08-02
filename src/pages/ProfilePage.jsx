@@ -93,7 +93,7 @@
 //     setLoadingFollowers(true);
 //     try {
 //       const token = localStorage.getItem("token");
-//       const followersPromises = userData.followers.map(userId => 
+//       const followersPromises = userData.followers.map(userId =>
 //         axios.get(`${BASE_URL}/api/users/${userId}`, {
 //           headers: {
 //             Authorization: `Bearer ${token}`,
@@ -120,7 +120,7 @@
 //     setLoadingFollowing(true);
 //     try {
 //       const token = localStorage.getItem("token");
-//       const followingPromises = userData.following.map(userId => 
+//       const followingPromises = userData.following.map(userId =>
 //         axios.get(`${BASE_URL}/api/users/${userId}`, {
 //           headers: {
 //             Authorization: `Bearer ${token}`,
@@ -796,17 +796,6 @@
 //   );
 // }
 
-
-
-
-
-
-
-
-
-
-
-
 import React, { useState, useEffect, useRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
@@ -833,6 +822,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardContent } from "@/components/ui/card";
 import CustomLoader from "@/components/CustomLoader";
 import { BASE_URL } from "../config.js";
+import toast from "react-hot-toast";
 
 export default function ProfilePage({ username = "me" }) {
   const [userData, setUserData] = useState(null);
@@ -846,10 +836,10 @@ export default function ProfilePage({ username = "me" }) {
   const [profileImage, setProfileImage] = useState(null);
   const [previewImage, setPreviewImage] = useState(null);
   const [formData, setFormData] = useState({
-    name: '',
-    username: '',
-    bio: '',
-    location: ''
+    name: "",
+    username: "",
+    bio: "",
+    location: "",
   });
   const [isUpdating, setIsUpdating] = useState(false);
   const [followersList, setFollowersList] = useState([]);
@@ -860,12 +850,15 @@ export default function ProfilePage({ username = "me" }) {
   const [activePostMenu, setActivePostMenu] = useState(null);
   const [showDeletePostModal, setShowDeletePostModal] = useState(false);
   const [postToDelete, setPostToDelete] = useState(null);
+  const [isDeletingPost, setIsDeletingPost] = useState(false);
   const fileInputRef = useRef(null);
   const menuRef = useRef(null);
   const navigate = useNavigate();
 
-  const defaultImage = "https://i.pinimg.com/736x/20/af/45/20af4549c7ddbe0e465c860f8d63e5e1.jpg";
-  const coverImage = "https://i.pinimg.com/1200x/d2/2f/d7/d22fd798bc95e0addaf7bb7a558d759b.jpg";
+  const defaultImage =
+    "https://i.pinimg.com/736x/20/af/45/20af4549c7ddbe0e465c860f8d63e5e1.jpg";
+  const coverImage =
+    "https://i.pinimg.com/1200x/d2/2f/d7/d22fd798bc95e0addaf7bb7a558d759b.jpg";
 
   const fetchUserData = async () => {
     try {
@@ -884,10 +877,10 @@ export default function ProfilePage({ username = "me" }) {
       setUserPosts(response.data.posts || []);
       setPreviewImage(response.data.profileImage || defaultImage);
       setFormData({
-        name: response.data.name || '',
-        username: response.data.username || '',
-        bio: response.data.bio || '',
-        location: response.data.location || ''
+        name: response.data.name || "",
+        username: response.data.username || "",
+        bio: response.data.bio || "",
+        location: response.data.location || "",
       });
     } catch (err) {
       setError(err.message || "Failed to fetch user data");
@@ -906,7 +899,7 @@ export default function ProfilePage({ username = "me" }) {
     setLoadingFollowers(true);
     try {
       const token = localStorage.getItem("token");
-      const followersPromises = userData.followers.map(userId => 
+      const followersPromises = userData.followers.map((userId) =>
         axios.get(`${BASE_URL}/api/users/${userId}`, {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -915,7 +908,7 @@ export default function ProfilePage({ username = "me" }) {
       );
 
       const followersResponses = await Promise.all(followersPromises);
-      const followersData = followersResponses.map(res => res.data.data);
+      const followersData = followersResponses.map((res) => res.data.data);
       setFollowersList(followersData);
     } catch (err) {
       console.error("Error fetching followers data:", err);
@@ -933,7 +926,7 @@ export default function ProfilePage({ username = "me" }) {
     setLoadingFollowing(true);
     try {
       const token = localStorage.getItem("token");
-      const followingPromises = userData.following.map(userId => 
+      const followingPromises = userData.following.map((userId) =>
         axios.get(`${BASE_URL}/api/users/${userId}`, {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -942,7 +935,7 @@ export default function ProfilePage({ username = "me" }) {
       );
 
       const followingResponses = await Promise.all(followingPromises);
-      const followingData = followingResponses.map(res => res.data.data);
+      const followingData = followingResponses.map((res) => res.data.data);
       setFollowingList(followingData);
     } catch (err) {
       console.error("Error fetching following data:", err);
@@ -994,9 +987,9 @@ export default function ProfilePage({ username = "me" }) {
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      [name]: value
+      [name]: value,
     }));
   };
 
@@ -1059,29 +1052,27 @@ export default function ProfilePage({ username = "me" }) {
     }
   };
 
-  const confirmDeletePost = (postId) => {
-    setPostToDelete(postId);
-    setShowDeletePostModal(true);
-    setActivePostMenu(null);
-  };
-
   const handleDeletePost = async () => {
     if (!postToDelete) return;
-    
+
+    setIsDeletingPost(true);
     try {
       const token = localStorage.getItem("token");
       await axios.delete(`${BASE_URL}/api/posts/${postToDelete}`, {
         headers: {
           Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
         },
       });
-      
-      setUserPosts(userPosts.filter(post => post._id !== postToDelete));
-      setShowDeletePostModal(false);
-      setPostToDelete(null);
-    } catch (err) {
-      console.error("Error deleting post:", err);
-      alert(err.response?.data?.message || "Failed to delete post");
+
+      // Refresh the posts after deletion
+      await fetchUserData();
+       toast.success("Post deleted successfully");
+    } catch (error) {
+      console.error("Error deleting post:", error);
+      toast.error(error.response?.data?.message || "Failed to delete post");
+    } finally {
+      setIsDeletingPost(false);
       setShowDeletePostModal(false);
       setPostToDelete(null);
     }
@@ -1094,7 +1085,7 @@ export default function ProfilePage({ username = "me" }) {
       });
       localStorage.removeItem("token");
       localStorage.removeItem("user");
-      navigate("/auth")
+      navigate("/auth");
     } catch (error) {
       console.error("Logout failed", error);
     }
@@ -1108,7 +1099,8 @@ export default function ProfilePage({ username = "me" }) {
 
     if (diffInSeconds < 60) return "Just now";
     if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)}m ago`;
-    if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)}h ago`;
+    if (diffInSeconds < 86400)
+      return `${Math.floor(diffInSeconds / 3600)}h ago`;
     return `${Math.floor(diffInSeconds / 86400)}d ago`;
   };
 
@@ -1127,7 +1119,9 @@ export default function ProfilePage({ username = "me" }) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-amber-50 via-white to-rose-50">
         <div className="text-center p-6 max-w-md mx-auto bg-white rounded-lg shadow-md">
-          <h2 className="text-xl font-semibold text-gray-800 mb-2">Error loading data</h2>
+          <h2 className="text-xl font-semibold text-gray-800 mb-2">
+            Error loading data
+          </h2>
           <p className="text-gray-600 mb-4">{error}</p>
           <Link
             to="/auth"
@@ -1153,7 +1147,9 @@ export default function ProfilePage({ username = "me" }) {
               </Link>
               <div>
                 <h1 className="font-semibold text-gray-900">{userData.name}</h1>
-                <p className="text-sm text-gray-500">{userPosts.length} posts</p>
+                <p className="text-sm text-gray-500">
+                  {userPosts.length} posts
+                </p>
               </div>
             </div>
             <div className="relative">
@@ -1231,10 +1227,14 @@ export default function ProfilePage({ username = "me" }) {
 
           <div className="flex items-start justify-between mb-4">
             <div className="flex-1">
-              <h1 className="text-2xl font-bold text-gray-900 mb-1">{userData.name}</h1>
+              <h1 className="text-2xl font-bold text-gray-900 mb-1">
+                {userData.name}
+              </h1>
               <p className="text-gray-600 mb-2">@{userData.username}</p>
 
-              <p className="text-gray-800 mb-3 leading-relaxed">{userData.bio || "No bio yet"}</p>
+              <p className="text-gray-800 mb-3 leading-relaxed">
+                {userData.bio || "No bio yet"}
+              </p>
 
               <div className="flex flex-wrap items-center gap-4 text-sm text-gray-600 mb-4">
                 {userData.location && (
@@ -1263,12 +1263,22 @@ export default function ProfilePage({ username = "me" }) {
               </div>
 
               <div className="flex items-center gap-6 text-sm">
-                <button onClick={() => setActiveTab("following")} className="hover:underline">
-                  <span className="font-semibold text-gray-900">{userData.following?.length || 0}</span>
+                <button
+                  onClick={() => setActiveTab("following")}
+                  className="hover:underline"
+                >
+                  <span className="font-semibold text-gray-900">
+                    {userData.following?.length || 0}
+                  </span>
                   <span className="text-gray-600 ml-1">Following</span>
                 </button>
-                <button onClick={() => setActiveTab("followers")} className="hover:underline">
-                  <span className="font-semibold text-gray-900">{userData.followers?.length || 0}</span>
+                <button
+                  onClick={() => setActiveTab("followers")}
+                  className="hover:underline"
+                >
+                  <span className="font-semibold text-gray-900">
+                    {userData.followers?.length || 0}
+                  </span>
                   <span className="text-gray-600 ml-1">Followers</span>
                 </button>
               </div>
@@ -1321,7 +1331,9 @@ export default function ProfilePage({ username = "me" }) {
               <button
                 onClick={() => setActiveTab("followers")}
                 className={`py-2 rounded-md text-sm font-medium transition-colors ${
-                  activeTab === "followers" ? "bg-white shadow-sm" : "text-gray-600"
+                  activeTab === "followers"
+                    ? "bg-white shadow-sm"
+                    : "text-gray-600"
                 }`}
               >
                 Followers
@@ -1329,7 +1341,9 @@ export default function ProfilePage({ username = "me" }) {
               <button
                 onClick={() => setActiveTab("following")}
                 className={`py-2 rounded-md text-sm font-medium transition-colors ${
-                  activeTab === "following" ? "bg-white shadow-sm" : "text-gray-600"
+                  activeTab === "following"
+                    ? "bg-white shadow-sm"
+                    : "text-gray-600"
                 }`}
               >
                 Following
@@ -1348,46 +1362,65 @@ export default function ProfilePage({ username = "me" }) {
                               src={userData.profileImage || defaultImage}
                               alt={userData.name}
                             />
-                            <AvatarFallback>{userData.name?.charAt(0) || "U"}</AvatarFallback>
+                            <AvatarFallback>
+                              {userData.name?.charAt(0) || "U"}
+                            </AvatarFallback>
                           </Avatar>
                           <div>
                             <p className="font-medium">{userData.username}</p>
-                            <p className="text-xs text-gray-500">{formatTime(post.createdAt)}</p>
+                            <p className="text-xs text-gray-500">
+                              {formatTime(post.createdAt)}
+                            </p>
                           </div>
                         </div>
                         <div className="relative" ref={menuRef}>
-                          <Button 
-                            variant="ghost" 
+                          <Button
+                            variant="ghost"
                             size="icon"
-                            onClick={() => setActivePostMenu(activePostMenu === post._id ? null : post._id)}
+                            onClick={() =>
+                              setActivePostMenu(
+                                activePostMenu === post._id ? null : post._id
+                              )
+                            }
                           >
                             <MoreHorizontal className="h-4 w-4" />
                           </Button>
                           {activePostMenu === post._id && (
                             <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-50 border border-gray-200">
-                              {post.user.toString() === userData._id.toString() && (
-                                <button
-                                  onClick={() => confirmDeletePost(post._id)}
-                                  className="flex items-center px-4 py-2 text-sm text-red-600 hover:bg-red-50 w-full text-left"
-                                >
-                                  <Trash2 className="h-4 w-4 mr-2" />
-                                  Delete Post
-                                </button>
-                              )}
-                              <button className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 w-full text-left">
-                                <Bookmark className="h-4 w-4 mr-2" />
-                                Save Post
-                              </button>
-                              <button className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 w-full text-left border-t border-gray-100">
-                                <Share2 className="h-4 w-4 mr-2" />
-                                Share Post
-                              </button>
+                              {post.user &&
+                                post.user.toString() ===
+                                  userData._id.toString() && (
+                                  <button
+                                    onClick={() => {
+                                      setPostToDelete(post._id);
+                                      setShowDeletePostModal(true); // ✅ Modal dikhane ka kaam
+                                      setActivePostMenu(null); // ✅ Dropdown band krdo
+                                    }}
+                                    className="flex items-center px-4 py-2 text-sm text-red-600 hover:bg-red-50 w-full text-left"
+                                  >
+                                    <Trash2 className="h-4 w-4 mr-2" />
+                                    Delete Post
+                                  </button>
+                                )}
+                             <button
+                                    onClick={() => {
+                                      setPostToDelete(post._id);
+                                      setShowDeletePostModal(true); // ✅ Modal dikhane ka kaam
+                                      setActivePostMenu(null); // ✅ Dropdown band krdo
+                                    }}
+                                    className="flex items-center px-4 py-2 text-sm text-red-600 hover:bg-red-50 w-full text-left"
+                                  >
+                                    <Trash2 className="h-4 w-4 mr-2" />
+                                    Delete Post
+                                  </button>
                             </div>
                           )}
                         </div>
                       </CardHeader>
                       <CardContent className="p-4">
-                        <p className="text-gray-800 whitespace-pre-line">{post.content}</p>
+                        <p className="text-gray-800 whitespace-pre-line">
+                          {post.content}
+                        </p>
                         {post.image && (
                           <div className="mt-4">
                             <img
@@ -1399,20 +1432,36 @@ export default function ProfilePage({ username = "me" }) {
                         )}
                         <div className="mt-4 flex items-center justify-between">
                           <div className="flex space-x-4">
-                            <Button variant="ghost" size="sm" className="text-gray-600">
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="text-gray-600"
+                            >
                               <Heart className="h-4 w-4 mr-1" />
                               <span>{post.likes?.length || 0}</span>
                             </Button>
-                            <Button variant="ghost" size="sm" className="text-gray-600">
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="text-gray-600"
+                            >
                               <MessageCircle className="h-4 w-4 mr-1" />
                               <span>{post.comments?.length || 0}</span>
                             </Button>
-                            <Button variant="ghost" size="sm" className="text-gray-600">
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="text-gray-600"
+                            >
                               <Share2 className="h-4 w-4 mr-1" />
                               <span>Share</span>
                             </Button>
                           </div>
-                          <Button variant="ghost" size="sm" className="text-gray-600">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="text-gray-600"
+                          >
                             <Bookmark className="h-4 w-4" />
                           </Button>
                         </div>
@@ -1444,16 +1493,34 @@ export default function ProfilePage({ username = "me" }) {
                 ) : followersList.length > 0 ? (
                   <div className="space-y-4">
                     {followersList.map((follower) => (
-                      <div key={follower._id} className="flex items-center p-4 bg-white rounded-lg shadow">
+                      <div
+                        key={follower._id}
+                        className="flex items-center p-4 bg-white rounded-lg shadow"
+                      >
                         <Avatar className="h-12 w-12">
-                          <AvatarImage src={follower.profileImage || defaultImage} alt={follower.name} />
-                          <AvatarFallback>{follower.name?.charAt(0) || "U"}</AvatarFallback>
+                          <AvatarImage
+                            src={follower.profileImage || defaultImage}
+                            alt={follower.name}
+                          />
+                          <AvatarFallback>
+                            {follower.name?.charAt(0) || "U"}
+                          </AvatarFallback>
                         </Avatar>
                         <div className="ml-4 flex-1">
-                          <h3 className="font-medium text-gray-900">{follower.name}</h3>
-                          <p className="text-sm text-gray-500">@{follower.username}</p>
+                          <h3 className="font-medium text-gray-900">
+                            {follower.name}
+                          </h3>
+                          <p className="text-sm text-gray-500">
+                            @{follower.username}
+                          </p>
                         </div>
-                        <Button variant="outline" size="sm" onClick={() => navigate(`/profile/${follower.username}`)}>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() =>
+                            navigate(`/profile/${follower.username}`)
+                          }
+                        >
                           View Profile
                         </Button>
                       </div>
@@ -1476,16 +1543,34 @@ export default function ProfilePage({ username = "me" }) {
                 ) : followingList.length > 0 ? (
                   <div className="space-y-4">
                     {followingList.map((followingUser) => (
-                      <div key={followingUser._id} className="flex items-center p-4 bg-white rounded-lg shadow">
+                      <div
+                        key={followingUser._id}
+                        className="flex items-center p-4 bg-white rounded-lg shadow"
+                      >
                         <Avatar className="h-12 w-12">
-                          <AvatarImage src={followingUser.profileImage || defaultImage} alt={followingUser.name} />
-                          <AvatarFallback>{followingUser.name?.charAt(0) || "U"}</AvatarFallback>
+                          <AvatarImage
+                            src={followingUser.profileImage || defaultImage}
+                            alt={followingUser.name}
+                          />
+                          <AvatarFallback>
+                            {followingUser.name?.charAt(0) || "U"}
+                          </AvatarFallback>
                         </Avatar>
                         <div className="ml-4 flex-1">
-                          <h3 className="font-medium text-gray-900">{followingUser.name}</h3>
-                          <p className="text-sm text-gray-500">@{followingUser.username}</p>
+                          <h3 className="font-medium text-gray-900">
+                            {followingUser.name}
+                          </h3>
+                          <p className="text-sm text-gray-500">
+                            @{followingUser.username}
+                          </p>
                         </div>
-                        <Button variant="outline" size="sm" onClick={() => navigate(`/profile/${followingUser.username}`)}>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() =>
+                            navigate(`/profile/${followingUser.username}`)
+                          }
+                        >
                           View Profile
                         </Button>
                       </div>
@@ -1527,8 +1612,8 @@ export default function ProfilePage({ username = "me" }) {
             </div>
             <div className="p-4 space-y-4">
               <p className="text-gray-700">
-                Are you sure you want to delete your account? This action cannot be undone.
-                All your data will be permanently removed.
+                Are you sure you want to delete your account? This action cannot
+                be undone. All your data will be permanently removed.
               </p>
               <div className="flex gap-2 pt-4">
                 <button
@@ -1558,7 +1643,10 @@ export default function ProfilePage({ username = "me" }) {
                 <h2 className="text-lg font-semibold">Delete Post</h2>
                 <button
                   className="p-2 rounded-full hover:bg-gray-100"
-                  onClick={() => setShowDeletePostModal(false)}
+                  onClick={() => {
+                    setShowDeletePostModal(false);
+                    setPostToDelete(null);
+                  }}
                 >
                   <X className="h-4 w-4" />
                 </button>
@@ -1566,18 +1654,50 @@ export default function ProfilePage({ username = "me" }) {
             </div>
             <div className="p-4 space-y-4">
               <p className="text-gray-700">
-                Are you sure you want to delete this post? This action cannot be undone.
+                Are you sure you want to delete this post? This action cannot be
+                undone.
               </p>
               <div className="flex gap-2 pt-4">
                 <button
-                  className="flex-1 bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-md"
+                  className="flex-1 bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-md flex items-center justify-center"
                   onClick={handleDeletePost}
+                  disabled={isDeletingPost}
                 >
-                  Delete Post
+                  {isDeletingPost ? (
+                    <span className="flex items-center">
+                      <svg
+                        className="animate-spin -ml-1 mr-2 h-4 w-4 text-white"
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                      >
+                        <circle
+                          className="opacity-25"
+                          cx="12"
+                          cy="12"
+                          r="10"
+                          stroke="currentColor"
+                          strokeWidth="4"
+                        ></circle>
+                        <path
+                          className="opacity-75"
+                          fill="currentColor"
+                          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                        ></path>
+                      </svg>
+                      Deleting...
+                    </span>
+                  ) : (
+                    "Delete Post"
+                  )}
                 </button>
                 <button
                   className="border border-gray-300 px-4 py-2 rounded-md hover:bg-gray-50"
-                  onClick={() => setShowDeletePostModal(false)}
+                  onClick={() => {
+                    setShowDeletePostModal(false);
+                    setPostToDelete(null);
+                  }}
+                  disabled={isDeletingPost}
                 >
                   Cancel
                 </button>
@@ -1632,7 +1752,10 @@ export default function ProfilePage({ username = "me" }) {
                 </div>
               </div>
               <div>
-                <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">
+                <label
+                  htmlFor="name"
+                  className="block text-sm font-medium text-gray-700 mb-1"
+                >
                   Name
                 </label>
                 <input
@@ -1646,7 +1769,10 @@ export default function ProfilePage({ username = "me" }) {
                 />
               </div>
               <div>
-                <label htmlFor="username" className="block text-sm font-medium text-gray-700 mb-1">
+                <label
+                  htmlFor="username"
+                  className="block text-sm font-medium text-gray-700 mb-1"
+                >
                   Username
                 </label>
                 <input
@@ -1660,7 +1786,10 @@ export default function ProfilePage({ username = "me" }) {
                 />
               </div>
               <div>
-                <label htmlFor="bio" className="block text-sm font-medium text-gray-700 mb-1">
+                <label
+                  htmlFor="bio"
+                  className="block text-sm font-medium text-gray-700 mb-1"
+                >
                   Bio
                 </label>
                 <textarea
@@ -1674,7 +1803,10 @@ export default function ProfilePage({ username = "me" }) {
                 />
               </div>
               <div>
-                <label htmlFor="location" className="block text-sm font-medium text-gray-700 mb-1">
+                <label
+                  htmlFor="location"
+                  className="block text-sm font-medium text-gray-700 mb-1"
+                >
                   Location
                 </label>
                 <input
